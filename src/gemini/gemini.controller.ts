@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Post, Res, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Post, Res, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { GeminiService } from './gemini.service';
 import { BasicPromptDto } from './dtos/basic-prompt.dto';
@@ -50,6 +50,24 @@ export class GeminiController {
     chatPrompt.files = files ?? [];
     const stream = await this.geminiService.chatPromptStream(chatPrompt);
     const data = await this.outputStreamResponse(res, stream);
+    const geminiMessage = {
+      role: 'model',
+      text: [{ text:data }],
+    };
+    const userMessage = {
+      role: 'user',
+      text: [{ text: chatPrompt.prompt }],
+    };
+    this.geminiService.saveMessage(chatPrompt.chatId!, userMessage);
+    this.geminiService.saveMessage(chatPrompt.chatId!, geminiMessage);
     return data;
+  }
+
+  @Get('chat-history/:chatId')
+  getChatHistory(@Param('chatId') chatId: string) {
+    return this.geminiService.getChatHistory(chatId).map(message => ({
+      role: message.role,
+      parts: message.parts?.map(part => part.text).join(''),
+    }));
   }
 }
