@@ -5,6 +5,8 @@ import { basicPromptUseCase } from './use-cases/basic-prompt.use-case';
 import { basicPromptStreamUseCase } from './use-cases/basic-prompt-stream.use-case';
 import { ChatPrompDto } from './dtos/chat-promp.dto';
 import { chatPromptStreamUseCase } from './use-cases/chat-prompt-stream.use-case';
+import { ImageGenerationDto } from './dtos/image-generation.dto';
+import { ImageGenerationUseCase } from './use-cases/image-generation.use-case';
 
 @Injectable()
 export class GeminiService {
@@ -33,6 +35,9 @@ export class GeminiService {
 
     getChatHistory(chatId: string){
         return structuredClone(this.chatHistory.get(chatId) || []);
+    }
 
+    imageGeneration(imageGeneration: ImageGenerationDto) {
+        return ImageGenerationUseCase(this.ai, imageGeneration);
     }
 }

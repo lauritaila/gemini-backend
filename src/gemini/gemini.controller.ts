@@ -5,10 +5,11 @@ import { BasicPromptDto } from './dtos/basic-prompt.dto';
 import type { Response } from 'express';
 import { ChatPrompDto } from './dtos/chat-promp.dto';
 import { GenerateContentResponse } from '@google/genai';
+import { ImageGenerationDto } from './dtos/image-generation.dto';
 
 @Controller('gemini')
 export class GeminiController {
-  constructor(private readonly geminiService: GeminiService) {}
+  constructor(private readonly geminiService: GeminiService) { }
 
   async outputStreamResponse(res: Response, stream: AsyncGenerator<GenerateContentResponse, any, any>) {
     res.setHeader('Content-Type', 'text/plain');
@@ -31,7 +32,7 @@ export class GeminiController {
   @Post('basic-prompt-stream')
   @UseInterceptors(FilesInterceptor('file'))
   async basicPromptStream(
-    @Body() basicPrompt: BasicPromptDto, 
+    @Body() basicPrompt: BasicPromptDto,
     @Res() res: Response,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
@@ -43,7 +44,7 @@ export class GeminiController {
   @Post('chat-stream')
   @UseInterceptors(FilesInterceptor('file'))
   async chatStream(
-    @Body() chatPrompt: ChatPrompDto, 
+    @Body() chatPrompt: ChatPrompDto,
     @Res() res: Response,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
@@ -52,7 +53,7 @@ export class GeminiController {
     const data = await this.outputStreamResponse(res, stream);
     const geminiMessage = {
       role: 'model',
-      text: [{ text:data }],
+      text: [{ text: data }],
     };
     const userMessage = {
       role: 'user',
@@ -70,4 +71,17 @@ export class GeminiController {
       parts: message.parts?.map(part => part.text).join(''),
     }));
   }
+
+  @Post('image-generation')
+  @UseInterceptors(FilesInterceptor('file'))
+  async imageGeneration(
+    @Body() imageGenerationDto: ImageGenerationDto,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ) {
+    imageGenerationDto.files = files ?? [];
+    const {imageUrl, text} = await this.geminiService.imageGeneration(imageGenerationDto);
+    return { imageUrl, text };
+
+  }
+
 }
