@@ -6,6 +6,8 @@ import type { Response } from 'express';
 import { ChatPrompDto } from './dtos/chat-promp.dto';
 import { GenerateContentResponse } from '@google/genai';
 import { ImageGenerationDto } from './dtos/image-generation.dto';
+import { PokemonHelperDto } from './dtos/pokemon-helper.dto';
+import { TriviaQuestionDto } from './dtos/trivia-question.dto';
 
 @Controller('gemini')
 export class GeminiController {
@@ -82,6 +84,16 @@ export class GeminiController {
     const {imageUrl, text} = await this.geminiService.imageGeneration(imageGenerationDto);
     return { imageUrl, text };
 
+  }
+
+  @Post('pokemon-helper')
+  async getPokemonHelp(@Body() pokemonHelperDto: PokemonHelperDto) {
+    return this.geminiService.getPokemonHelp(pokemonHelperDto);
+  }
+
+  @Get('trivia/question/:topic')
+  async getTriviaQuestion(@Param() triviaQuestionDto: TriviaQuestionDto) {
+    return this.geminiService.getTriviaQuestion(triviaQuestionDto);
   }
 
 }
